@@ -13,7 +13,7 @@
 /public/api/
 # ignore GoodSync stuff anywhere
 **/_gsdata_/
-#ignore any video stuff
+# ignore any video stuff; supposed to be in a Folder 'video'
 **/video/
 
 
