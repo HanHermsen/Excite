@@ -1,0 +1,217 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-weight: 100;
+    background-color: #FFF;
+    color: #666;
+    font-family: helvetica_light;
+    font-size: small;
+    position: absolute;
+    top:60px; /* hoogte van de header */
+   	z-index: 1;
+}
+a:link, a:visited, a:active {
+	text-decoration: none;
+	color:#666;
+}
+a:hover {
+	color: #E22879;
+}
+@font-face {
+ font-family:helvetica_light;
+ src: url("/fonts/helvetica_light.ttf");
+}
+/**** my stuff */
+body { // for size settings
+	box-sizing: border-box;
+	/* needed as long as this 'new' standard is not broadly supported as such */
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+}
+.flexContainer {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	/*border-style: solid;
+	border-color: green;
+	border-width: 5px; */
+}
+/* voor de kinderen */
+.flexBox {
+/*
+	border-style: solid;
+	border-color: red;
+	border-width: 2px; */
+}
+
+
+#header {
+	z-index: 1;
+	position: fixed;
+	width: 100%;
+	height: 110px;
+	top:0px;
+	background-color: white;
+	/* padding: 10px 0 15px 0;
+	background-color: #E1007A;
+	color: #E1E1E1; */
+	/*
+	-webkit-box-shadow: 0px 4px 4px 0px rgba(50, 50, 50, 0.50);
+	-moz-box-shadow:    0px 4px 4px 0px rgba(50, 50, 50, 0.50);
+	box-shadow:         0px 4px 4px 0px rgba(50, 50, 50, 0.50); */
+	/* border: dotted; */
+	overflow: hidden;
+}
+
+#headerLogo {
+	position: absolute;
+	top: 15px;
+	left: 50px;	
+	overflow: none;
+	/* border: dotted; */
+}
+#headerTop {
+	position: absolute;
+	top: 0px;
+	width: 100%;
+	height: 70px;
+	overflow: none;
+	background-color: #E1007A;
+	color: #E1E1E1;
+	/*
+	-webkit-box-shadow: 0px 4px 4px 0px rgba(50, 50, 50, 0.50);
+	-moz-box-shadow:    0px 4px 4px 0px rgba(50, 50, 50, 0.50);
+	box-shadow:         0px 4px 4px 0px rgba(50, 50, 50, 0.50); */
+}
+#headerTopLogo {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+
+#headerTopText{
+	background-color: #E1007A;
+	position: absolute;
+	left: 350px;
+	top: 35px;
+	padding: 0px;
+	margin: 0px;
+	line-height:10%;
+}
+
+#headerText{
+	position: absolute;
+	left: 300px;
+	top: 70px;
+}
+
+#headerMenu{
+	position: absolute;
+	top: 20px;
+	right: 40px;
+	width: 100px;
+	height: 40px;
+	/* border: dotted; */
+}
+
+#content {
+	z-index:0;
+	 position: relative;
+	 top: 0px;
+}
+#userInputBox {
+	width: 300px;
+	height: 480px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: LightGrey;
+	margin: auto;
+}
+#exciteForm {
+	width: 270px;
+	margin: auto;
+}
+#mapBox {
+	width: 410px;
+	height: 410px;
+	//border: solid;
+	margin: auto;
+}
+#openMap {
+	position: relative;
+	height: 400px; /*660*/
+	width: 370px;
+	left: 0px;
+	top: 0px;
+}
+
+#formContainer {
+	left-margin: 10px;
+	width: 290px;
+}
+
+@media all and (max-width: 840px) {
+#headerTopText, #headerText{
+	visibility: hidden;
+}
+
+@media all and (max-width: 400px) {
+#newQuestions, #videoplayer{
+	width: 100%;
+	heigth: 200px;
+}
+
+
+
+/*  stolen stuff */
+input {
+	border: 1px solid #FB6E33;
+	padding: 10px;
+	font-size: 14px;
+	margin:0 2px 4px 0;
+	display: block;
+	-moz-border-radius: 10px 10px 10px 10px;
+	-webkit-border-radius: 10px 10px 10px 10px;
+	border-radius: 10px 10px 10px 10px; /* future proofing */
+	-khtml-border-radius: 10px 10px 10px 10px; /* for old Konqueror browsers */
+	outline-width: 0;
+}
+
+form input[name="remember"] {
+	margin-top:20px;
+	display: inline;
+	outline-width: 0;
+}
+form input[type="submit"] {
+	position: relative;
+	margin-left:175px;
+	width: 40px;
+	height: 40px;
+	background-color: #FB6E33;
+	border: 2px solid #333;
+	-moz-border-radius: 20px 20px 20px 20px;
+	-webkit-border-radius: 20px 20px 20px 20px;
+	border-radius: 20px 20px 20px 20px; /* future proofing */
+	-khtml-border-radius: 20px 20px 20px 20px; /* for old Konqueror browsers */
+	outline-width: 0;
+}
+form input[type="submit"]:hover {
+	background-color: #E1007A;
+}
+
+strong {
+	display:block;
+	padding: 5px 0 5px 0;
+	color: #E1007A;
+	font-size: 18px;
+}
+h1 {
+	margin:0;
+	padding:0;
+	background-color: #FFF;
+}
+p {
+	margin-top:0;
+}

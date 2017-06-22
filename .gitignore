@@ -1,0 +1,19 @@
+# first ignore everything
+/*
+# except....
+!/.gitignore
+!/.gitattributes
+!/app/
+!/php-scripts/
+!/public/
+!/resources/
+# but ignore as follows in the exceptions made
+/public/.htaccess
+/public/video/
+/public/api/
+# ignore GoodSync stuff anywhere
+**/_gsdata_/
+#ignore any video stuff
+**/video/
+
+

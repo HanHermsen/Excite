@@ -1,0 +1,44 @@
+<html>
+<head>
+</head>
+<body style='font-family: Helvetica, Arial, sans-serif; font-size: 10pt; margin:auto; width: 90%'>
+
+Er is belangstelling voor uw mening in de groep Organisch Organiseren op Yixow.<br />
+In de App vind u meer vragen en meningen. (Gratis en zonder reclame)<br />
+U kunt deze vraag ook buiten de App beantwoorden met een klik op de Antwoorden-Button.<br />
+<br />
+Namens Organisch Organiseren,
+<br />
+Hartelijk dank voor uw medewerking.
+<br />
+<br />
+<!-- <img width=302px src="https://www.yixow.com/api/api/images/ffaeea95dfd15db3c15e710efeb71d5b.png"> -->
+<img width=302px src="https://yixow.com/images/placeholder.png">
+<br />
+<br />
+<table><tr><td style='width: 290px;font-family: Helvetica, Arial, sans-serif; font-size: 10pt'>
+De mens wil niet veranderen. Zou dat echt waar zijn? Ik weet het niet.
+</td></tr></table>
+<br />
+<!-- button for link that works everywhere; see https://litmus.com/blog/a-guide-to-bulletproof-buttons-in-email-design -->
+<table border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>
+      <table border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td style='width: 302px'>
+             <a href="https://www.yixow.com/DE_LINK_NAAR_DE_VRAAG_PAGE" target="_blank" style="width: 300px; text-align: center; font-size: 15px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; background-color: #5C5E5C; border-top: 12px solid #5C5E5C; border-bottom: 12px solid #5C5E5C; border-right: 1px solid #5C5E5C; border-left: 1px solid #5C5E5C; display: inline-block;">
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Antwoorden&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			 </a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<br /><br />
+Als u geen vragen meer wilt ontvangen van Organisch Organiseren<br />
+kunt u zich <a href="https://www.yixow.com/DE_LINK_NAAR_DE_OPT-OUT">hier</a>
+afmelden.
+
+</body></html>

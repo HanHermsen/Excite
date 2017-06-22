@@ -1,0 +1,83 @@
+<?php
+
+class DBx { // simple PDO db access Class for Laravel project db
+    private $conn = null;
+    function __construct ($envFile = null,$throw = false) {
+        if ( $envFile == null )
+                $envFile = "../.env"; // ok when main script is in Laravel_Codebasedir/php-scripts/
+        $f = fopen($envFile, "r") or die("Unable to open " . $envFile);
+        $dbInfo = [];
+        while(!feof($f)) {
+          $line = fgets($f);
+          if ( strpos($line,'DB_HOST=') === 0 ) {
+                $dbInfo['host'] = trim( substr( $line, strlen('DB_HOST='))); 
+          } elseif ( strpos($line,'DB_DATABASE=') === 0 ) {
+                $dbInfo['db'] = trim(substr( $line, strlen('DB_DATABASE='))); 
+          } elseif ( strpos($line,'DB_USERNAME=') === 0 ) {
+                $dbInfo['user'] = trim(substr( $line, strlen('DB_USERNAME='))); 
+          } elseif ( strpos($line,'DB_PASSWORD=') === 0 ) {
+                $dbInfo['passwd'] = trim(substr( $line, strlen('DB_PASSWORD=')));
+          }
+          if ( count($dbInfo) == 4 ) break;
+        }
+        fclose($f);
+        if ( count($dbInfo) != 4 ) {
+                var_dump($dbInfo);
+                die("Problem with " . $envFile);
+        }
+
+        $conStr = "mysql:host=" . $dbInfo['host'] . ";dbname=" . $dbInfo['db'];
+        // deze extra is nodig voor het netbeans systeem van Leo: sql_mode staat niet goed!
+        $extra = array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET sql_mode=""');
+        try {
+            $this->conn = new PDO($conStr, $dbInfo['user'], $dbInfo['passwd'],$extra);
+            // is important for the right handling of the type of ? parameters....
+            // anders: MySql statement syntax errors!
+            $this->conn->setAttribute( PDO::ATTR_EMULATE_PREPARES, false );
+            // set the PDO error mode to exception
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            // this is mysql specific so beware; geen uitleg waarom
+            $this->conn->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+        }
+        catch(PDOException $e)
+        {
+                if (!$throw) {
+                        var_dump($dbInfo);
+                        self::elend($e->getMessage(). " Connection: " . $conStr);
+                }
+                else
+                        // delegate catch to the call that must be in a try/catch
+                        throw new PDOException($e->getMessage());
+        }
+    }
+
+    static function elend($mess) {
+         die( "Excuus, er is een onverwacht probleem. Probeer het later nog eens.<br />Graag vermelding van <br/>onderstaande foutmelding by communicatie met Yixow:<br>" . $mess );
+    }
+    public function select($q, $args =  []) {
+            $stmt = $this->conn->prepare($q);
+            $stmt->execute($args);
+            return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public function update($q, $args =  []) {
+            $stmt = $this->conn->prepare($q);
+            $stmt->execute($args);
+    }
+
+    public function insert($q, $args = []) {
+            $stmt = $this->conn->prepare($q);
+            $stmt->execute($args);	
+    }
+   public function lastInsertId() {
+            return $this->conn->lastInsertId();
+    }
+	
+    public function beginTransaction() {
+            $this->conn->beginTransaction();
+    }
+    public function commit() {
+            $this->conn->commit();
+    }
+
+}

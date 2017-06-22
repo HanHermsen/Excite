@@ -1,0 +1,1066 @@
+<?php
+class RunStatsC
+{
+	const PIE = 0;
+	const ANSB = 1;
+	const CATB = 2;
+	const GEOPROV = 3;
+	const MAP = 4;
+	
+	const ABS_LIMIT = 5;
+
+	// javascript object literal data strings; to be embedded in blade
+	private $pieData = '';
+	private $answerBarData = '';
+	private $categoryBarData = '';
+	private $geoProvData = '';
+	private $geoUnshared = ''; // string met aantal niet gedeelde postcodes/woonplaatsen
+	
+	private $munMapData = ''; // municipalities/gemeenten
+	private $locMapdata = ''; // locations/plaatsen
+	private $zipMapData = ''; // zipcodes full
+	private $zip4MapData = '';// zipcodes 4 cijfers
+	
+	private $colorScheme = [
+	/*0*/	['DarkGreen'],
+	/*1*/	['Red','DarkGreen'],
+	/*2*/	['red','blue', 'darkGreen'],
+	/*3*/	['red','blue', 'Gold', 'DarkGreen'],
+	/*4*/	['DarkRed','Red', 'OrangeRed', 'DarkOrange','Orange', 'Yellow', 'Gold', 'GreenYellow','Green', 'DarkGreen'],
+	/*5*/	['DarkRed','Red', 'OrangeRed', 'DarkOrange','Orange', 'Yellow', 'Gold', 'GreenYellow','Green', 'DarkGreen'],
+	/*6*/	['DarkRed','Red', 'OrangeRed', 'DarkOrange','Orange', 'Yellow', 'Gold', 'GreenYellow','Green', 'DarkGreen'],
+	/*7*/	['DarkRed','Red', 'OrangeRed', 'DarkOrange','Orange', 'Yellow', 'Gold', 'GreenYellow','Green', 'DarkGreen'],
+	/*8*/	['DarkRed','Red', 'OrangeRed', 'DarkOrange','Orange', 'Yellow', 'Gold', 'GreenYellow','Green', 'DarkGreen'],
+	/*9*/	['DarkRed','Red', 'OrangeRed', 'DarkOrange','Orange', 'Yellow', 'Gold', 'GreenYellow','Green', 'DarkGreen']
+	];
+	private $radiusScheme = [
+	/*0*/	[2000],
+	/*1*/	[500, 	1000],
+	/*2*/	[1200,	1400, 	1600],
+	/*3*/	[1000, 	1200,	1400, 	1600],
+	/*4*/	[800, 	1000, 	1200,	1400,	1600],
+	/*5*/	[600,	800,	1000,	1200,	1400,	1600],
+	/*6*/	[400,	600,	800,	1000,	1200,	1400,	1600],
+	/*7*/	[200,	400,	600,	800,	1000,	1200,	1400,	1600],
+	/*8*/	[150,	200,	400,	600,	800,	1000,	1200,	1400,	1600],
+	/*9*/	[100,	150,	200,	400,	600,	800,	1000,	1200,	1400,	1600]
+	];
+
+
+	private $catValues;  // all possible category values
+	private $allOptions; // all possible options
+	
+	// the count arrays
+	private $optionCatCount; // key [option][cat]
+	private $catOptionCount; // key [cat][option]
+	private $catTotalCount;	 // key [cat]
+	private $optionTotalCount; // key [option]
+
+	private $munCount;  // municipality counter[2] with Lat[0]/Lon[1]; key: gemeentenaam
+	private $locCount;  // location counter[2]with Lat[0]/Lon[1]; key: plaatsnaam
+	private $zipCount;  // full zip counter[2] with Lat[0]/Lon[1]; key: full zipcode
+	private $zip4Count;  // zip 4 counter[2] with Lat[0]/Lon[1]; key: 4 digit zipcode
+	
+	// count vars
+	private $allAnswerWithCatCount = 0; // all answers met gedeelde profielwaarde
+	private $allGivenAnswerCount = 0; // all answers given includes 'niet gedeeld'
+
+	private $extraInfo;
+	
+	private $allGivenAnswerQResult;
+	
+	private $getDataFromCache = false;
+	private $dbResult = [];
+
+	// public get functions for the build of the blade templates
+	public function getNotSharedCount() {
+		return $this->allGivenAnswerCount - $this->allAnswerWithCatCount;
+	}
+
+	public function getPieData() {
+		return "\n[" . $this->pieData . "\n]";
+	}
+	
+	public function getAnswerBarData() {
+		return "[" . $this->answerBarData . "\n]";
+	}
+	
+	public function getCategoryBarData() {
+		return "\n[" . $this->categoryBarData . "\n]";
+	}
+	public function getCategoryBarData2() {
+		return "\n[" . $this->categoryBarData2 . "\n]";
+	}
+	
+	public function getGeoProvData() {
+		return "\n[" . $this->geoProvData . "\n]";
+	}
+	
+	public function getMunMapData() {
+		return "\n[" . $this->munMapData . "\n]";
+	}
+	public function getLocMapData() {
+		return "\n[" . $this->locMapData . "\n]";
+	}
+	
+	public function getZipMapData() {
+		return "\n[" . $this->zipMapData . "\n]";
+	}
+	
+	public function getZip4MapData() {
+		return "\n[" . $this->zip4MapData . "\n]";
+	}
+	
+	public function getGeoUnshared() {
+		return $this->geoUnshared;
+	}	
+	public function getAllGivenAnswerCount () {
+		return $this->allGivenAnswerCount;
+	}	
+	public function getExtraInfo () {
+		$hostname = gethostname();
+		if ("$hostname" == "yixow.local")
+			return $this->extraInfo;
+		return $this->extraInfo . '<br />' . $this->memUsageStart . '<br />' . $this->memUsageEnd . '<br />' . memory_get_peak_usage(true);
+	}
+
+	private $geoArr;
+	public function getMapDataForJson () {
+		return $this->geoArr;
+	}
+	
+	private $userProfileData = '{}';
+	public function getUserProfileData() {
+		return $this->userProfileData;
+	}
+	public function handle() {
+	/*public function handle($questionId, $statsType = null, $viewType = 'null') {
+	$this->questionId = $questionId;
+	$this->statsType = $statsType;
+	$this->viewType = $viewType; */
+		$this->allGivenAnswerQ($this->questionId);
+		$qs = 'SELECT answerCnt FROM StatsCache ';
+		$qs .= 'WHERE question_id = ? AND statsType = ? ';
+		$qs .= 'LIMIT 1';
+		$result = $this->DB->select($qs,[$this->questionId, $this->statsType]);
+		if ( count($result) > 0 && $result[0]->answerCnt == $this->allGivenAnswerCount) {// do nothing
+			//echo "No changes " . $this->questionId . ' ' . $this->statsType . "\n";
+			return;
+		}
+		if ( ! $this->clientWait ) // do not show when called from web client
+			echo "Make Run " . $this->questionId . ' ' . $this->statsType . "\n";
+		if ( count($result) == 0 ) { // make row reservation
+			$qi = 'INSERT StatsCache ';
+			$qi .= 'SET jsData = ?, qResult = ?, question_id = ?, statsType = ?, answerCnt = 0, updateInProgress = 1 ' ;
+			$this->DB->insert($qi,['',json_encode([]),$this->questionId,$this->statsType]);
+		}
+		if ($this->statsType == 'Mini') {
+			//Postcode was for doGeo; you can take any Profile key
+			//$this->mainData($questionId, 'Postcode');
+			//$this->mainData($this->questionId, 'Geslacht'); // no need to do this all
+			$this->allOptions = $this->allOptions($this->questionId);
+			$this->doPie( /*$this->optionCatCount,*/ true);
+			// for province map; not needed enymore
+			//$this->doGeo($this->catTotalCount, true);
+		} elseif ( $this->statsType == 'Map' ) { // voor de Kaart alleen dit nodig
+			$this->mainGeoData($this->questionId);
+			//dd($this->catTotalCount);
+			$this->doGeo($this->catTotalCount);
+			$this->extraInfo = "Gemeenten: " . count($this->munCount). "<br />";
+			$this->extraInfo .= "Plaatsen: " . count($this->locCount). "<br />";
+			$this->extraInfo .= "Postcode: " . count($this->zipCount). "<br />";
+			$this->extraInfo .= "Postcode4: " . count($this->zip4Count). "<br />";
+		} else {
+			$this->mainData($this->questionId, $this->statsType);
+			$this->doPie(/*$this->optionCatCount*/);
+			$this->doAnswerBar($this->optionCatCount);
+			$this->doCategoryBar($this->catOptionCount);
+		}
+		// write data to cache
+		if ( $this->writeCache )
+			$this->putAllData();
+	}
+	function __construct($questionId, $statsType = null, $viewType = 'null', $clientWait = 0, $DB, $writeCache = true) {
+	// refactor trick
+		$this->DB = $DB;
+		$this->clientWait = $clientWait;
+		$this->writeCache = $writeCache;
+		ini_set('memory_limit','256M');
+		$this->memUsageStart = memory_get_usage(true);
+		$this->viewType = $viewType;
+		$this->questionId = $questionId;
+        /*
+		// statsType is de category/profielnaam
+		// map some special external Button names on the right internal db sleutel name
+		switch ($statsType) {
+			case null:
+			case 'null':
+				$statsType = 'Geluk'; // default
+				break;
+			case 'Provincie':
+				$statsType = 'Postcode';
+				break;
+			case 'Leeftijd':
+				$statsType = 'Geboortejaar';
+				break;
+			case 'Transport':
+				$statsType = 'Transportmiddelen';
+				break;
+			case 'Titel':
+				$statsType = 'Titels';
+				break;
+		}
+		if ($viewType == 'Geo') $statsType = 'Map';
+		if ($viewType == 'Mini') $statsType = 'Mini'; */
+		$this->statsType = $statsType;
+
+		$this->handle();
+		return;
+	}
+
+	/** private functions **/
+	private function putAllData() {
+		//$result = [];
+
+		if ( $this->statsType == 'Map' ) {
+		/*
+			//$dbResult = [];
+			$dbResult['mun'] = $this->munCount;
+			$this->munCount = null;
+
+			$dbResult['loc'] = $this->locCount;
+			$this->locCount = null;
+
+			$dbResult['zip'] = [];
+			$this->zipCount = null;
+
+
+			$dbResult['zip4'] = $this->zip4Count;
+			$this->zip4Count = null; */
+			$this->memUsageEnd = memory_get_usage(true);
+			
+
+		} else $dbResult = $this->dbResult;
+		$dbResult = [];
+
+		if ($this->statsType == 'Map' ) {
+			$data = "\n" . "Excite.qu.geoUnshared = '" . $this->getGeoUnshared() . "';";
+			$data .= "\n" . "Excite.qu.extraInfo = '" . $this->getExtraInfo() . "';";
+			$data .= "\n" . "Excite.qu.geoProvData = " . $this->getGeoProvData();
+			$data .= "\n" . "Excite.qu.mapDataArr['mun'] = " . $this->getMunMapData();
+			$this->munMapData = '';
+			$data .= "\n" . "Excite.qu.mapDataArr['loc'] = " . $this->getLocMapData();
+			$this->locMapData = '';
+			// $data .= "\n" . "Excite.qu.mapDataArr['zip'] = " . $this->getZipMapData();
+			$data .= "\n" . "Excite.qu.mapDataArr['zip'] = " . '';
+			$this->zipMapdata = '';
+			$data .= "\n" . "Excite.qu.mapDataArr['zip4'] = " . $this->getZip4MapData() . ";\n";
+			$this->zip4MapData = '';
+		} else {
+			$data = "\n" . 'Excite.qu.pieData = ' . $this->getPieData();
+			if ($this->statsType != 'Mini') {
+				$data .= "\n" . 'Excite.qu.answerBarData = ' . $this->getAnswerBarData();
+				$data .= "\n" . 'Excite.qu.categoryBarData = ' . $this->getCategoryBarData();
+				$data .= "\n" . 'Excite.qu.categoryBarData2 = ' . $this->getCategoryBarData2();
+				$data .= "\n" . 'Excite.qu.allGivenAnswerCount = ' . $this->getAllGivenAnswerCount() . ";\n";
+				$hostname = gethostname();
+				if ("$hostname" != "yixow.local")
+					$data .= "\n" . 'Excite.qu.notSharedCount = ' . $this->getNotSharedCount() . ";\n";
+				$data .= "\n" . 'Excite.qu.emailAnswerCount = ' . $this->emailAnswerCount . ";\n";
+			}
+		}
+				// Update in 2 steps; otherwise data can be too large for 1 update...
+				$q = 'UPDATE StatsCache ';
+				$q .= 'SET qResult = ? '  ;
+				$q .= 'WHERE question_id = ? AND statsType = ? LIMIT 1';
+				$this->DB->update( $q , [ json_encode($dbResult), $this->questionId, $this->statsType] );
+				$timestamp = date('Y-m-d H:i:s');
+				$q = 'UPDATE StatsCache ';
+				$q .= 'SET jsData = ? , answerCnt = ? , updateInProgress = 0, updatedAt = ? '  ;
+				$q .= 'WHERE question_id = ? AND statsType = ? LIMIT 1';
+				$this->DB->update( $q , [ $data, $this->allGivenAnswerCount, $timestamp, $this->questionId, $this->statsType] );
+
+	}
+	
+	private function mainGeoData($questionId) {
+		$statsType = 'Postcode';
+		// get data with modified Montana query
+		$result = $this->getIndex($questionId,$statsType);
+
+		// haal provicienamen
+		$this->catValues = $this->catValues($statsType);
+		//$this->allOptions = $this->allOptions($questionId);
+		
+		$catValues = &$this->catValues;
+		//$allOptions = &$this->allOptions;
+		// initialize count arrays
+		foreach ( $catValues as $cat ) {
+				$this->catTotalCount[$cat->id] = 0;
+		}
+		/*
+		foreach ( $allOptions as $opt ) {
+			$this->optionTotalCount[$opt->optionsId] = 0;
+		} */
+
+		// collect the counts in result and put them in the count arrays
+		//dd($result);
+		foreach ( $result as $r ) {
+			$cat = $r->waarde_id;
+			$opt = $r->option_id;
+			// replace possible niet gedeeld default values
+			// -1, is answer by email
+			if ($cat === null || trim($cat) === '') $cat = '0,';
+	
+			$multiCat = explode(',', $cat);
+			$cat = $multiCat[0]; // code provincienaam
+
+			if ( $cat != 0 && $cat != -1 ) { // voor de kaart en alleen gedeelde!
+				// gemeentenaam in $multicat[1] dan lat en lon etc
+				if (! $this->geoInput($multiCat, $r->incr) ) {
+					//var_dump($cat + ', ' + $multiCat);
+					die("Probleem met Postcode string: " . $r->waarde_id);
+				}					
+			}
+
+			$incr = $r->incr;
+			
+			$this->catTotalCount[$cat] += $incr;
+			//$this->optionTotalCount[$opt] += $incr;
+			//$this->allAnswerWithCatCount += $incr;
+		}
+/*
+		// niet gedeeld moet ook bij Postcode!!!
+		$result = $this->allGivenAnswerQResult;
+		//dd($this->catTotalCount);
+		//dd($optionTotalCount);
+		$all = 0;
+		// TODO nog eens goed bekijken
+		// niet gedeeld tgv geen datapairs zijn al meegeteld..... maar dit gaat verder goed... allen ophogen
+		foreach ( $result as $r ) {
+			$all += $r->count;
+			$notShared = $r->count - $this->optionTotalCount[$r->option_id];
+			$this->catTotalCount[0] += $notShared;			
+		}
+		$this->allGivenAnswerCount = $all;
+*/
+		
+		// sorteer zipCounts van hoog naar laag op count dan komen de grotere cirkels onder kleinere te liggen op de kaart
+		// kan je (vrijwel) overal op blijven klikken TODO andere map data arrays ook? TODO dit moet generiek
+		if ( isset($this->zip4Count))
+			uasort($this->zip4Count, function($a,$b) { // anonymous function kan ook bij php!
+				if ($a[2] == $b[2]) {
+					return 0;
+				}
+				return ($a[2] < $b[2]) ? 1 : -1;
+			});
+		if( isset($this->zipCount))
+			uasort($this->zipCount, function($a,$b) {
+				if ($a[2] == $b[2]) {
+					return 0;
+				}
+				return ($a[2] < $b[2]) ? 1 : -1;
+			});
+
+	}
+
+	private function mainData($questionId, $statsType) {
+		// get data with Montana query
+		$result = $this->getIndex($questionId,$statsType);
+//echo "getIndex main query " . count($result) . "<br>";
+		$this->catValues = $this->catValues($statsType);
+//echo "catValues " . count($this->catValues) . "<br>";
+
+		$this->allOptions = $this->allOptions($questionId);
+//echo "allOptions " . count($this->allOptions) . "<br>";
+		//if ( $statsType == 'Postcode' ) dd($this->allOptions);
+		$allOptions = &$this->allOptions;
+		$catValues = &$this->catValues;
+		// initialize main count arrays
+		foreach ( $allOptions as $opt ) {
+			$this->optionTotalCount[$opt->optionsId] = 0;
+			foreach ( $catValues as $cat ) {
+				$this->optionCatCount[$opt->optionsId][$cat->id] = 0;
+				$this->catOptionCount[$cat->id][$opt->optionsId] = 0;
+			}
+		}
+		// initialize catTotalCount
+		foreach ( $catValues as $cat ) {
+			$this->catTotalCount[$cat->id] = 0;
+		}
+
+		// collect the counts in result and put them in the count arrays
+		foreach ( $result as $r ) {
+			$opt = $r->option_id;
+			$cat = $r->waarde_id;
+			if ($cat == null || trim($cat) == '') $cat = 0;
+
+			//echo $opt . " " . $cat . ' ' . $r->incr . '<br />';
+			$this->optionCatCount[$opt][$cat] += $r->incr;
+			$this->catOptionCount[$cat][$opt] += $r->incr;
+
+			$this->catTotalCount[$cat] += $r->incr;
+			$this->optionTotalCount[$opt] += $r->incr;
+			if ( $cat > 0 )
+				$this->allAnswerWithCatCount += $r->incr;
+		}
+		$aByE = $this->answersByEmail;
+		$this->emailAnswerCount = 0;
+		if ( count($aByE) == 0 ) return;
+		// make corrections for answers by email
+		foreach ( $aByE AS $aE ) {
+			$opt = $aE->option_id;
+			$cnt = $aE->emailAnswerCount;
+			$this->emailAnswerCount += $cnt;
+			$this->optionCatCount[$opt][-1] += $cnt;
+			$this->optionCatCount[$opt][0] -= $cnt;
+			$this->catOptionCount[-1][$opt] += $cnt;
+			$this->catOptionCount[0][$opt] -= $cnt;
+			
+			$this->catTotalCount[-1] += $cnt;
+			$this->catTotalCount[0] -= $cnt;
+
+		}
+	}
+	// maak counts aan per option en bereken alle gegeven antwoorden
+	private function allGivenAnswerQ ($questionId) {
+		//$count = DB::table('answers')->where('question_id', '=' ,$questionId)->count();
+		$q = 'SELECT option_id, COUNT(option_id) AS count, answers.id AS answersId FROM answers '; // XXXXXXX
+		$q .= 'WHERE answers.question_id = ? ';
+		$q .= 'GROUP BY option_id ';
+		$result = $this->DB->select($q, [$questionId]);
+		//dd($result);
+		$this->allGivenAnswerQResult = $result;
+		$all = 0;
+		foreach ( $result as $r ) {
+			$all += $r->count;
+		}
+		$this->allGivenAnswerCount = $all;
+		return $result;
+	}
+	
+	
+	private function geoInput ($in, $cnt) { //TODO kan beter
+		for ( $i = 0; $i <= 9; $i++ ) {
+			if ( ! isset($in[$i] ) ) { // accepteer alleen fully specified
+				return false;
+			}
+		}
+		$provCode = $in[0];
+		/*
+		$munName = $in[1];	$munLat = $in[2];	$munLon = $in[3];
+		$locName = $in[4];	$locLat = $in[5];	$locLon = $in[6];
+		$zipCode = $in[7];	$zipLat = $in[8];	$zipLon = $in[9];
+*/
+		$munName = $in[1];	$munLat = substr ($in[2],0,strpos($in[2], '.') + 5) ;	$munLon = substr ($in[3],0,strpos($in[3], '.') + 5);
+		$locName = $in[4];	$locLat = substr ($in[5],0,strpos($in[5], '.') + 5);	$locLon = substr ($in[6],0,strpos($in[6], '.') + 5);
+		$zipCode = $in[7];	$zipLat = substr ($in[8],0,strpos($in[8], '.') + 5);	$zipLon = substr ($in[9],0,strpos($in[9], '.') + 5);
+		//$cnt = 1;
+		
+		if  (! isset($this->munCount[$munName] ))
+			$this->munCount[$munName] = [$munLat,$munLon,$cnt];
+		else
+			$this->munCount[$munName][2] += $cnt;
+
+		$key = $locName;
+		if ( $locName != $munName )
+			$key = $locName . ';' . $munName;
+		if  (! isset($this->locCount[$key] ) )
+			$this->locCount[$key] = [$locLat,$locLon,$cnt];
+		else
+			$this->locCount[$key][2] += $cnt;
+
+		$key = $zipCode. ',' . $locName;
+		if  (! isset($this->zipCount[$key] ) )
+			$this->zipCount[$key] = [$zipLat,$zipLon,$cnt];
+		else
+			$this->zipCount[$key][2] += $cnt;
+			
+		$zipCode = substr($zipCode,0,4);
+		$key = $zipCode. ',' . $locName;
+		if  (! isset($this->zip4Count[$key] ) )
+			$this->zip4Count[$key] = [$zipLat,$zipLon,$cnt];
+		else
+			$this->zip4Count[$key][2] += $cnt;
+		return true;
+	}
+	
+	private function catValues($statsType) {
+		if ( $statsType == 'Geluk' || $statsType == 'Gezondheid' ) { // maak eigen 10 pts schaal
+			$result = [];
+			for ( $i = 10; $i >0; $i-- ) {
+				$result[] = (Object) [ 'id'=>$i, 'text' => "$i" ];
+			}
+			$result[] = (Object) [ 'id' => 0, 'text' => 'Niet gedeeld'];
+			$result[] = (Object) [ 'id' => -1, 'text' => 'Per email'];
+			return $result;
+		}
+		$q = 'SELECT waardes.id, waardes.text, sleutels.meta, sleutels.id AS sleutelId FROM sleutels ';
+		$q .= 'LEFT JOIN waardes ON waardes.sleutel_id = sleutels.id ';
+		$q .= 'WHERE sleutels.text = ? ';
+		$q .= 'ORDER BY waardes.sort ASC ';
+		$result = $this->DB->select($q, [$statsType]);
+
+		if ( count($result) == 0 ) {
+			var_dump($result);
+			die ("Geen statistiek: Probleem met waarden van categorie '$statsType'");
+		}
+		if( (count($result) == 1 && $result[0]->text == null)) {
+				var_dump($result);
+				die("Geen statistiek voor '$statsType'");
+		}
+
+		// voeg 'Niet gedeeld' catValue toe
+		array_push($result, (Object) [ 'id' => 0, 'text' => 'Niet gedeeld']);
+		array_push($result, (Object) [ 'id' => -1, 'text' => 'Per email']);
+		return $result;
+	}
+	
+	private function allOptions($questionId) {
+		$q = 'SELECT options.id AS optionsId, options.text FROM options ';
+		$q .= 'WHERE options.question_id = ? ';
+		$q .= 'ORDER BY id ASC' ; // de eerst toegevoegde eerst; is goed als antwoorden in 'juiste' volgorde worden geplaatst; er is geen order column
+		$allOpts = $this->DB->select( $q , [$questionId]);
+/* use allGivenAnswersQresult!
+		$q = 'select option_id, answers.id AS answersId FROM answers ';
+		$q .= 'WHERE answers.question_id = ? ';
+		$q .= 'GROUP BY option_id';
+		$usedOpts = $this->DB->select( $q , [$questionId]); */
+		$usedOpts = $this->allGivenAnswerQResult;
+	
+		$result = [];
+		foreach ( $allOpts as $all ) {
+			// remove illegal enters (horen niet in de db, maar kwam bij tests per ongeluk wel voor ...)
+			$all->text = str_replace(["\r\n", "\n", "\r"], ' ',$all->text);
+			// fix quotes!
+			$all->text = str_replace("'", "\'", $all->text);
+			$all->text = str_replace('"', '\"', $all->text);
+			$match = false;
+			foreach ( $usedOpts as $used ) {
+				if ( $all->optionsId == $used->option_id ) {
+					$all->answersId = $used->answersId;
+					$result[] = $all;
+					$match = true;
+					break;
+				}
+			}
+			if ( ! $match ) {
+				$all->answersId = null;
+			}
+		}
+		foreach ( $allOpts as $all ) {
+			if ( $all->answersId == null ) {
+				$all->text = '-' . $all->text;
+				$result[] = $all;
+			}
+		}
+		//dd($result);
+		return $result;
+	}
+
+	//private function doPie($optionCatCount, $mini = false)
+	private function doPie($mini = false)
+	{
+		$result = [];
+		$xNames = ['Antwoord' , 'Aantal'];
+		$this->addRow($xNames, $this->pieData, self::PIE, true);
+
+		$agac = $this->allGivenAnswerQResult;
+		foreach ( $this->allOptions as $opt ) {
+			$count = 0;
+			foreach($agac as $a) {
+				if ( $a->option_id == $opt->optionsId)
+					$count = $a->count;
+			}
+			$result[] = [ 'cnt' => $count, 'text' => $opt->text ];
+		}
+		if ( $mini ) {
+			uasort($result, function($a,$b) {
+					if ($a['cnt'] == $b['cnt']) {
+						return 0;
+					}
+					return ($a['cnt'] < $b['cnt']) ? 1 : -1;
+			});
+		}
+		foreach ( $result as $r ) {
+			$v = [ $r['text'], $r['cnt'] ];
+			$this->addRow($v, $this->pieData, self::PIE);
+		}
+	}	
+	private function doAnswerBar($optionCatCount) {
+		$xNames[0] = 'Antwoord';
+		$i = 1;
+		foreach ($this->catValues as $cat){
+			//if ( $cat ->id == 0 ) break; // stop vanaf niet gedeeld
+			$xNames[$i++] = $cat->text;
+		}
+		$this->addRow($xNames, $this->answerBarData, self::ANSB,true);
+		foreach ( $this->allOptions as $opt) {
+			$v[0] = $opt->text;
+			$vindex =1;
+			$le = count($optionCatCount[$opt->optionsId]) - 2;
+			$i = 0;
+			foreach ( $optionCatCount[$opt->optionsId] as $cnt ) {
+				//if( $i == $le) break; // stop vanaf niet gedeeld
+				$v[$vindex++] = $cnt;
+				$i++;
+			}
+			$this->addRow($v, $this->answerBarData, self::ANSB,false,$opt->optionsId);
+		}		
+	}
+	
+	private function doCategoryBar($catOptionCount) {
+		$xNames[0] = 'Categorie';
+		$i = 1;
+		foreach ($this->allOptions as $opt){
+			$xNames[$i++] = $opt->text;
+		}
+		$this->addRow($xNames, $this->categoryBarData, self::CATB, true);
+		$this->addRow($xNames, $this->categoryBarData2, self::CATB, true);
+		// dd($catOptionCount); // dit resultaat is gek
+		foreach ( $this->catValues as $cat) {
+			//if ( $cat->id == 0 ) break; // stop vanaf niet gedeeld
+			$v[0] = $cat->text;
+			$vindex =1;
+			foreach ( $catOptionCount[$cat->id] as $cnt ) {
+				$v[$vindex++] = $cnt;
+			}
+			if ( $cat->id == 0 || $cat->id == -1 )
+				$this->addRow($v, $this->categoryBarData2, self::CATB,false, $cat->id);
+			else
+				$this->addRow($v, $this->categoryBarData, self::CATB,false, $cat->id);
+		}
+	}
+	
+	private function doGeo($catTotalCount, $mini = false) {
+		// GeoChart Provinces
+		$xNames = ['Provincie' , 'Aantal Antwoorden'];
+		$this->addRow($xNames, $this->geoProvData, self::GEOPROV, true);
+		//var_dump($catTotalCount);
+		$percentOnly = false;
+		if ( $this->allGivenAnswerCount < self::ABS_LIMIT) $percentOnly = true;
+
+		foreach ( $this->catValues as $cat) {
+			if ( $this->allGivenAnswerCount != 0 )
+				$percent = round ( ($catTotalCount[$cat->id] / $this->allGivenAnswerCount) *100 , 1);
+			else $percent = 0;
+			if( $cat->id == 0 ) {
+				if ($percentOnly) {
+					$this->geoUnshared = $percent . "%";
+				}
+				else{
+					$this->geoUnshared = $catTotalCount[$cat->id] . " - " . $percent . "%";
+				}
+				continue;
+			}
+			$v[0] = $cat->text;
+			if ($percentOnly)
+				$v[1] = $percent;
+			else
+				$v[1] = $catTotalCount[$cat->id];
+			$this->addRow($v, $this->geoProvData, self::GEOPROV);
+			
+		}
+		if ( $mini ) return; // no MAP needed
+		
+		// go on for the MAP
+
+		$this->doGeoArr($this->catTotalCount);
+		return;
+	}
+
+	private function doGeoArr($catTotalCount, $strAlso = true) {
+		// geoArr can be used for seperate ajax json download of map data
+		// as an alternative for object literal text insert in the script text
+		// works fine but not in use (yet)
+		// optionally the data strings are built up too; default true
+		$geoArr = &$this->geoArr;
+		$percentOnly = false;
+		if ( $this->allGivenAnswerCount < self::ABS_LIMIT) $percentOnly = true;
+		$xNames = ['Lat' , 'Lon' , 'Label', 'Radius', 'Color'];
+		$gI = ['mun', 'loc', 'zip', 'zip4'];
+		//$gI = ['mun'];
+		$counts = [$this->munCount, $this->locCount, $this->zipCount , $this->zip4Count];
+		$targets = [ &$this->munMapData, &$this->locMapData, &$this->zipMapData, &$this->zip4MapData ];
+		// give all targets at least a heading row
+		for ( $i = 0; $i < count($gI); $i++ ){
+			//$geoArr["$gI[$i]"][] = $xNames;
+			if($strAlso)
+				$this->addRow($xNames, $targets[$i], self::MAP, true);
+		}
+		if ( ! isset($this->munCount) ) { // there's no data
+			return;
+		}
+		$len = count($gI);
+		for ( $i = 0; $i < $len; $i++ ) {
+			$minCnt = 0;
+			$maxCnt = 0;
+			$countDensity = [];
+			// TODO dit kan mis gaan als er niks is..........; uitzoeken
+			foreach ( $counts[$i] as $key => $cnt) {
+				$countDensity[$cnt[2]] = 1;
+				if ( $maxCnt == 0 ) {
+					$minCnt = $cnt[2];
+					$maxCnt = $cnt[2];
+					continue;
+				}
+				if ( $cnt[2] > $maxCnt ) $maxCnt = $cnt[2];
+				else
+					if ($cnt[2] < $minCnt ) $minCnt = $cnt[2];
+			}
+			$scaleSize = count($countDensity);
+			if ( $scaleSize > 10 ) $scaleSize = 10;
+			$schemeIndex = $scaleSize - 1;
+			$this->schemeIndex = $schemeIndex;
+			foreach ( $counts[$i] as $key => $cnt) {
+				$o[0] = floatval($cnt[0]); //Lat
+				$o[1] = floatval($cnt[1]); //Lon
+				$p[0] = $cnt[0]; //Lat
+				$p[1] = $cnt[1]; //Lon
+				if ( $this->allGivenAnswerCount != 0 ) {
+					$percent = round ( ($cnt[2] / $this->allGivenAnswerCount) *100 , 1);
+					if ($percent == 0 ) // TODO bad coding
+						$percent = round ( ($cnt[2] / $this->allGivenAnswerCount) *100 , 2);
+				} else $percent = 0;
+				$debug = '';
+				$show = $debug . $percent . "%";
+				if ( ! $percentOnly )
+					$show = $cnt[2] . ' - ' . $show;
+				$o[2] = $key . ": " . $show  ; // popup text
+				$p[2] = '"' . $o[2] . '"' ;
+				$t = (($cnt[2]- $minCnt)/ ($maxCnt -$minCnt + 1))*$scaleSize;
+				$t = floor($t);
+				if ( $i == 2 ) // complete postcode; keep dots small
+					$o[3] = $p[3] = 10; // circle radius = 10 meter = 2 huizen
+				else {
+					$o[3] = $p[3] = $this->radiusScheme[$schemeIndex][$t]; // circle size
+				}
+				$o[4] = $this->colorScheme[$schemeIndex][$t]; // color of circle
+				$p[4] = "'" . $o[4] . "'";
+
+				//$geoArr["$gI[$i]"][] = $o;
+				if($strAlso)
+					$this->addRow($p, $targets[$i], self::MAP);
+			}
+		}
+		//dd($geoArr['mun']);
+	}
+	
+	// write one row to one of the Javascript data strings
+	private function addRow($v, &$target, $targetId, $firstRow = false, $index = -2) {
+		$fixTooltip = false;
+		switch ($targetId) {
+			case self::PIE:
+					// never fix tooltip here; is fixed with chart option in blade
+			case self::MAP:
+					// no fix needed
+				break;
+			case self::GEOPROV:
+			case self::CATB:
+				$fixTooltip = true; // fix always needed
+				break;
+			case self::ANSB:
+				// fix for small populations only
+				if ( $this->allGivenAnswerCount < self::ABS_LIMIT) {
+					$fixTooltip = true;
+				}
+		}
+		if ( ! $firstRow )
+			$target .= ",";
+		$target .= "\n[";
+		$cnt = count($v);
+		for ( $i= 0; $i< $cnt; $i++ ) {
+			if ( $firstRow ) {
+				// quote all in first row 
+				$target .= "'$v[$i]'";
+				if ( $fixTooltip && $i > 0)
+					$this->addTooltipElem($target, $targetId, $firstRow);
+			}
+			else { // normal row
+				if ( $i == 0 ) { // is first elem
+					if ( $targetId == self::MAP )
+						$target .= "$v[$i]";
+					else
+						$target .=  "'$v[$i]'";
+				}
+				else { // is not first elem
+					if ($targetId != self::MAP )
+						$v[$i] = round($v[$i],2);
+					$target .= "$v[$i]";
+					if ( $fixTooltip) {
+						$perc = '';
+						if ( $targetId == self::CATB ) {
+							if ($this->allGivenAnswerCount != 0 )
+								$p = round(($v[$i]/$this->allGivenAnswerCount)*100, 1);
+							else $p = 0;
+							$abs = '';
+							if ($this->allGivenAnswerCount >= self::ABS_LIMIT )
+								$abs = $v[$i] . " - ";
+							$perc = "\\n<br /> $abs $p% van alle antwoorden";
+						}
+						if ( $targetId == self::GEOPROV ) {
+							if ($this->allGivenAnswerCount >= self::ABS_LIMIT ) {
+								$abs = $v[$i] . " - ";
+								$p = round(($v[$i]/$this->allGivenAnswerCount)*100, 1);
+								$abs = $v[$i] . " - ";
+								$perc = "\\n $abs $p%";
+							} else { // percentage already available
+								$p = $v[$i];
+								$perc = "\\n $p%";					
+							}
+							
+						}
+						// TODO for ANSB gaat het goed, maar waarom?
+						$this->addTooltipElem($target, $targetId, $firstRow, $i - 1, $v[0], $perc);
+					}
+				}
+			}
+			if ( $i != $cnt - 1)
+				$target .= ',';			
+		}
+		// add total count annotations to Bar Charts
+		if ( $targetId == self::CATB || $targetId == self::ANSB) {
+			if ($firstRow) 
+				$target .= ", {role: 'annotation'}";
+			else {
+				if ( $targetId == self::CATB )
+					$count = $this->catTotalCount[$index];
+				else
+					$count = $this->optionTotalCount[$index];
+				if ( $count > 0 )
+					$target .= ", '" . $this->formatN($count) . " - " . round(($count/$this->allGivenAnswerCount)*100, 1) . "%'";
+				else
+					$target .= ", '" . '0' . "'";
+			}
+		}	
+		$target .= "]";
+	}
+	
+	// write extra element to data row string for Google Chart tooltip fix; kind of hacked code
+	private function addTooltipElem(&$target, $targetId, $firstRow, $xIndex = 1, $yText = 'Y-tekst', $perc = '') {
+		if ( $firstRow ) {
+			// after each data item label extra elem with tooltip options
+			$str = "{role: 'tooltip', p: { html: true}}";
+			$target .= ", " . $str;
+			return;
+		}
+		// add tooltip stuff after data elem
+		$str = '';
+		if ($targetId == self::GEOPROV)
+			$str .= $perc;
+		else
+			$str = '<div class="tooltipLine"><span class="tooltipFirst">' . "$yText</span><br />";
+		if ( $targetId == self::ANSB )
+			$str .= $this->catValues[$xIndex]->text . '</div>';
+		if ( $targetId == self::CATB ) {
+			$str .= $this->allOptions[$xIndex]->text . $perc . '</div>';
+		}
+		$target .= ", '" . $str . "'";
+	}
+
+	public function getIndex($questionId, $statsType )
+    {
+		// groupBy = false: all results are made available for handling multivalues
+		$groupBy = false;
+		$g = 'groupBy: no';
+
+		if ( $this->allGivenAnswerCount > 500 ) {
+			$groupBy = true;
+			$g = 'groupBy: yes';
+		}
+		//$groupBy = false;
+		//echo "RunStats: This was handled by New stats Query (" . $g . ") " . "<br />";
+		
+		$q  = 'SELECT option_id, waarde_id, ';
+		if ( $groupBy )
+			$q .= 'COUNT(*) AS incr ';
+		else
+			$q .= '1 AS incr ';
+		$q .= ', user_id FROM ';
+		//$q .= 'FROM ';
+		$q .= '( ';
+		$q .= 'SELECT CASE ';
+		$q .= 'WHEN sleutels.text = "Geluk" OR sleutels.text = "Gezondheid" THEN datapairs.meta ';
+		$q .= 'WHEN sleutels.text = "Geboortejaar" THEN datapairs.metahl ';
+		if ( $this->viewType != 'Geo')
+			$q .= 'WHEN sleutels.text = "Postcode" THEN SUBSTRING_INDEX(datapairs.metahl,",",1) '; // for Provincies
+		else
+			$q .= 'WHEN sleutels.text = "Postcode" THEN datapairs.metahl '; // for the Map
+		$q .= 'ELSE datapairs_waardes.waarde_id ';
+		$q .= 'END AS waarde_id, ';
+		if ( $groupBy )
+			$q .= 'COUNT(answers.user_id) AS uidCnt, ';
+		else
+			$q .= '1 AS uidCnt, ';
+		$q .= 'answers.option_id, user_id FROM answers ';
+		$q .= 'left join sleutels on sleutels.text = ? ';
+		$q .= 'left join datapairs on answers.dataset_id = datapairs.dataset_id AND datapairs.sleutel_id = sleutels.id ';
+		$q .= 'left join datapairs_waardes on datapairs.id = datapairs_waardes.datapair_id ';
+		$q .= 'where answers.question_id = ? ';
+		if ($groupBy)
+			$q .= 'GROUP BY user_id';
+		$q .= ') AS tmp ';
+		if ($groupBy ) {
+			$q .= "group by waarde_id, option_id ";
+			$q .= 'order by waarde_id ';
+		} else {
+			$q .= 'order by user_id '; 
+		}
+		$result = $this->DB->select( $q , [$statsType, $questionId]);
+		/*
+		if ( $statsType == 'Gezondheid' )
+			die($result); */
+		// get answers by email
+		$q = 'SELECT COUNT(user_id) AS emailAnswerCount, option_id FROM answers ';
+		$q .= 'WHERE user_id = 565 AND question_id = ? ';
+		$q .= 'GROUP BY option_id ';
+		$r = $this->answersByEmail = $this->DB->select( $q , [$questionId]);
+		/*
+		$this->emailAnswerCount = 0;
+		if ( count($r) > 0 ) {
+			var_dump($r);
+			foreach ( $r AS $s )
+				$this->emailAnswerCount += $s->emailAnswerCount;
+		}
+*/		
+		if ( $groupBy ) {
+			if ($this->viewType == 'Geo' )
+				$this->dbResult = [];
+			else
+				$this->dbResult = $result;
+			return $result;
+		}
+
+		// fix multivalues when groupBy = false
+
+		$i = 0;
+		$lastUserId = 0;
+		$sleutelCount = 0;
+		foreach ($result as $r) {				
+			if ( $lastUserId != $r->user_id ) {
+				$this->fixIncr($result,$i, $sleutelCount, $lastUserId);
+				$lastUserId = $r->user_id;
+				$sleutelCount = 0;
+			}
+			++$i;
+			++$sleutelCount;
+		}
+		// fix $r->incr of the last series; if any
+		$this->fixIncr($result,$i, $sleutelCount, $lastUserId);
+		$this->dbResult = $result;
+		return $result;
+	}
+		private function fixIncr($result,$i, $sleutelCount, $lastUserId) {
+			// note that $result is an object it points to the array; it acts as a reference 
+			if ( $lastUserId == 565 ) return; // no fix needed for email answers. TODO: test
+			if ( $sleutelCount > 1 ) {
+				$incr = 1/$sleutelCount;
+				for ( $j = $i - $sleutelCount; $j < $i; $j++ )
+					$result[$j]->incr = $incr;
+			}
+		}
+		private function formatN($n) {
+			$r = round($n,2);
+			if ( $n != $r )
+				return number_format($r,2);
+			return number_format($r,0);
+		}
+}
+/*
+class DBx { // wrap Laravel DB facade; all calls $this->DB-> above are a replacement for Laravel DB::
+	private $conn = null;
+	function __construct ($throw = false) {
+		$hostName = gethostname(); 
+		if ( "$hostName" == "example.com" ) { // host demo.yixow.com
+*/		/* prepare split
+			$s = 'test.yixow.com';
+			if (isset($_SERVER['HTTP_HOST'])
+				//$s = $_SERVER['HTTP_HOST'];
+			if ( $s == 'test.yixow.com' ) { // http://test.yixow.com
+				$dbName = "test_yixow";
+				$servername = "localhost";
+				$username = "exciteapp_dev";
+				$password = "A2pvgDmmHZ";
+			} else { // http://demo.yixow.com only calls from web client!!!! No background processing
+				$dbName = "exciteapp_dev";
+				$servername = "localhost";
+				$username = "blah";
+				$password = "blah";			
+			}
+		*/
+/*
+				$dbName = "test_yixow";
+				$servername = "localhost";
+				$username = "exciteapp_dev";
+				$password = "A2pvgDmmHZ";
+		} elseif ( "$hostName" == "yixow.local" ) { // yixow.com
+			$dbName = "yixbow_yixow";
+			$servername = "localhost";
+			$username = "yixbow_yixow";
+			$password = "8Fg6@d7i@SQL";		
+		} else {
+			// dit is mijn lokale tst srvr
+			$dbName = "exciteapp_dev";
+			$servername = "localhost";
+			$username = "homestead";
+			$password = "secret";
+		}
+		try {
+			$this->conn = new PDO("mysql:host=$servername;dbname=$dbName", $username, $password);
+			// set the PDO error mode to exception
+			$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			// this is mysql specific so beware
+			$this->conn->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+			//print_r($this->conn);
+		}
+		catch(PDOException $e)
+		{
+			if (!$throw) {
+				self::elend($e->getMessage());
+			}
+			else
+				// delegate catch to the call that must be in a try/catch
+				throw new PDOException($e->getMessage());
+		}
+		//return $this->conn;
+	}
+	
+	static function elend($mess) {
+			die( "Excuus, er is een onverwacht probleem. Probeer het later nog eens.<br />Graag vermelding van <br />onderstaande foutmelding by communicatie met Yixow:<br>" . $mess );
+	}
+	public function select($q, $args =  []) {
+		$conn = $this->conn;
+
+		$stmt = $conn->prepare($q);
+		$stmt->execute($args);
+		//print_r (  $stmt->fetchAll(PDO::FETCH_OBJ) ); 
+		return $stmt->fetchAll(PDO::FETCH_OBJ);
+	
+	}
+	
+	public function update($q, $args =  []) {
+		$conn = $this->conn;
+
+		$stmt = $conn->prepare($q);
+		$stmt->execute($args);
+		//print_r (  $stmt->fetchAll(PDO::FETCH_OBJ) ); 
+	
+	}
+	
+	public function insert($q, $args = []) {
+		$conn = $this->conn;
+
+		$stmt = $conn->prepare($q);
+		$stmt->execute($args);	
+	}
+	public function beginTransaction() {
+		$conn = $this->conn;
+		$conn->beginTransaction();
+	}
+	public function commit() {
+		$conn = $this->conn;
+		$conn->commit();
+	}
+
+}
+
+*/

@@ -1,0 +1,123 @@
+/* Toggle Styles */
+
+#wrapper {
+	padding-left: 0;
+}
+
+#wrapper.toggled {
+    padding-left: 250px;
+}
+
+#sidebar-wrapper {
+    z-index: 1;
+    position: fixed;
+    top:0;
+    left: 250px;
+    width: 125px;
+    height: 100%;
+    margin-left: -250px;
+    overflow-y: auto;
+    background: #3F3F3F;
+	-webkit-box-shadow: 4px 0px 15px 0px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow:    4px 0px 15px 0px rgba(50, 50, 50, 0.75);
+	box-shadow:         4px 0px 15px 0px rgba(50, 50, 50, 0.75);
+}
+
+#wrapper.toggled #sidebar-wrapper {
+    width: 125px;
+}
+
+#page-content-wrapper {
+    width: 100%;
+    position: absolute;
+    padding: 15px 15px 15px 150px ;
+}
+
+#wrapper.toggled #page-content-wrapper {
+    position: absolute;
+    margin-right: -250px;
+}
+
+/* Sidebar Styles */
+.navbar-default {
+	height: 50px;
+	margin:0;
+}
+.sidebar-nav {
+    position: absolute;
+    top: 0;
+    width: 125px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sidebar-nav li {
+    text-indent: 5px;
+    line-height: 40px;
+}
+
+.sidebar-nav li a {
+    display: block;
+    text-decoration: none;
+    color: #FFF;
+	border-top: 1px solid #C0C0C0;
+	border-bottom: 1px solid #C0C0C0;
+	margin-top:5px;
+}
+
+.sidebar-nav li a:hover {
+	text-decoration: none;
+	background-color: #DD287A;
+	cursor: auto !important;
+}
+
+.sidebar-nav li a:active,
+.sidebar-nav li a:focus {
+	background-color: #DD287A;
+    color: #FFF
+}
+.Disabled {
+	opacity: 0.4;
+    filter: alpha(opacity=40); /* For IE8 and earlier */
+}
+.Disabled:hover {
+	background-color: #3F3F3F !important;
+	/*pointer-events: none;*/
+   	cursor: default;
+}
+.SubMenuActive {
+	background-color: #DD287A;
+    color: #FFF
+}
+.sidebar-nav > .sidebar-brand {
+    height: 100px;
+}
+.sidebar-nav > .sidebar-brand .menuLogoText {
+	color: #FFF;
+	font-size: 20px;
+	font-style: italic;
+}
+.sidebar-nav > .sidebar-brand img {
+	float:right;
+	padding: 5px 8px 0 0;
+}
+.sidebar-nav > .sidebar-brand a {
+    color: #999999;
+}
+
+.sidebar-nav > .sidebar-brand a:hover {
+    color: #fff;
+    background: none;
+}
+.icon-menu > img  {
+	width: 18px;
+	height: 18px;
+	margin-top:-4px;
+}
+.Header-info {
+	font-style: italic;
+	font-weight: bold;
+	display: inline-block;
+	padding: 15px 0 0 145px;
+}

@@ -1,0 +1,55 @@
+<?php
+
+namespace Excite\Models;
+
+use DB;
+use Auth;
+
+class questionDbModel {
+
+	public static function insertQuestion($question,$timeStamp,$formDateFrom,$formDateTill,$groupId,$image) {
+		
+		$addQuestion = DB::table('questions')->insertGetId(
+				array(
+				'user_id' => Auth::user()->id,
+				'question' => $question,
+				'inappropriate' => '0',
+				'created_at' => $timeStamp,
+				'updated_at' => $timeStamp,
+				'start_date' => $formDateFrom,
+				'end_date' => $formDateTill,
+				'group_id' => $groupId,
+				'image' => $image,
+				'deleted' => '0',
+				'popularity' => '0'
+			)
+
+		);	
+		
+		return $addQuestion;	
+	}
+
+	public static function insertAnswer($questionId,$answer,$timeStamp) {
+		
+		$addAnswer = DB::table('options')->insertGetId(
+			array(
+			'question_id' => $questionId,
+			'text' => $answer,
+			'created_at' => $timeStamp,
+			'updated_at' => $timeStamp,
+			)
+		
+		);
+		
+		return $addAnswer;
+				
+	}
+	
+	public static function updateQuestion($id,$args) {
+  
+		  $updateQuestion = DB::table('questions')
+		   ->where('id',$id)
+		   ->limit(1)
+		   ->update($args); 
+	}
+}

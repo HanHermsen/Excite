@@ -1,0 +1,58 @@
+
+class DBx
+
+Simple PDO db access wrapper Class voor een Laravel project db;  auteur Han.
+
+-- db info (db host, db naam, username, password)
+Wordt ingelezen uit (LaravelCodebase)/.env
+Klopt derhalve met de db die het 'bijbehorende' Laravel project gebruikt.
+Zie ook: NOOT onderaan.
+
+-- Gebruik in scripts in (LaravelCodebase)/php-scripts/
+
+require_once 'includes/DBx.incl'; // haal de Class op
+$db = new DBx; // $db is een DBx Class instance
+               // met een private PDO connectie met de Laravel project db
+
+Zie ook: NOOT onderaan.
+
+- public functions van DBx zijn in gebruik vergelijkbaar met de basale
+select(), update() en insert() functies van Laravel 'DB::'.
+Hier volgen ze.
+
+$q is 'prepared statement' MySql query string (alleen ? voor parameters!);
+$args is _optionele_ array
+met query parameters, als die nodig zijn.
+Bij ontbreken van $args gebruikt DBx $args = []
+
+    $res = $db->select($q, $args);
+    $db->update($q, $args);
+    $db->insert($q, $args);
+	
+	$id = $db->lastInsertId();
+	als je het id wilt weten van de laatste insert
+
+	En voor een db Transaction:
+    $db->beginTransaction();
+    $db->commit();
+	
+
+NOOT.
+DBx bekijkt (LaravelCodebase)/.env om de 'juiste' project db te openen.
+Die file wordt verondersteld te staan in ../.env
+tov de directory waarin het script staat dat DBx gebruikt
+via require_once.
+Dat is ok voor scripts in (LaravelCodebase)/php-scripts/
+Een daarvan afwijkend relatief pad voor een script 'elders'
+kan zonodig worden opgegeven.
+Bv
+$db = new DBx('../../.env');
+als het script in een subFolder staat van
+(LaravelCodeBase)/php-scripts/
+Dan moet _bovendien_ dit ook:
+require_once '../includes/DBx.incl';
+
+Etc. voor scripts die 'nog verder weg in de file tree staan'.
+	
+
+

@@ -1,0 +1,57 @@
+
+Deamon: RunStatsD.php
+
+Location: (LaravelCodeBase)/php-scripts/
+
+Samenvatting:
+Werkt in de background de eXcite Stats Cache bij.
+Zou een auto starting 'Linux service' moeten worden.
+
+Beschrijving:
+Alle te geven commando's die later volgen -na 'cmd:'- in een Putty terminal
+op de juiste Linux server. Dus op yixow.com
+voor de produktie server
+of op demo.yixow.com voor de 'test' of 'demo' server.
+
+(Codebase) verwijst hierna naar de root Folder van een
+Laravel eXcite project op de server in kwestie.
+Op yixow.com (produktie server) is dit: /domains/yixow.com/
+Op demo.yixow.com is dit: /domains/test.yixow.com/ voor de
+Laravel Codebase van http://test.yixow.com of
+/domains/demo.yixow.com/ voor de Laravel Codebase van http://demo.yixow.com
+
+
+-- loopt RunStatsD (nog) in de background?
+
+cmd: ps axww | grep RunStatsD
+
+Voorbeeld output when running:
+14313 ?        S      9:33 php RunStatsD.php   #deze regel is er alleen als ie loopt
+15292 pts/1    R+     0:00 grep --color=auto RunStatsD
+
+Het processId van RunStatsD is in dit voorbeeld 14313
+
+-- Stoppen RunStatsD background job
+cmd: kill processId
+In het voorbeeld dus:
+cmd: kill 14313
+
+-- Starten in de background
+cmd: cd (Codebase)/php-scripts #zorg als nodig voor de goede working directory
+cmd: nohup php RunStatsD.php > log 2>&1 &
+
+Er komt een log file die 'log' heet.
+
+-- log file volgen van lopende background run
+Voorbeeld: de log file kreeg bij start (zie boven) de naam 'log'.
+
+cmd: cd (Codebase)/php-scripts #zorg als nodig voor de goede working directory
+cmd: tail -f log
+
+-- testen in de foreground (beter niet gelijk met lopende RunStatsD background job!)
+cmd: cd (Codebase)/php-scripts #zorg als nodig voor de goede working directory
+cmd: php RunStatsD.php
+
+
+
+

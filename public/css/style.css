@@ -1,0 +1,123 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-weight: 100;
+    background-color: #F0F0F0;
+    color: #333;
+    font-family: arial;
+    font-size: small;
+}
+
+a:link, a:visited, a:active {
+	text-decoration: none;
+    color: #DD287A;
+}
+a:hover {
+    text-decoration: underline;
+}
+*:disabled:not(#uploadFile):not(.navButton):not(#gbutton):not(.statsButton):not(.swButton) {
+    border: 1px dotted #FF7020 !important;
+    background-color: #FFF !important;
+}
+form input[type="submit"], form input[type="reset"] {
+	width:200px;
+    background-color: #DD287A;
+    color: #FFF;
+    cursor: pointer;
+}
+textarea {
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px ;
+	border-radius: 5px ;
+	padding: 5px;
+	border: 1px solid #ccc;
+}
+input, input[type="text"] ,select {
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px ;
+	border-radius: 5px ;
+	padding: 5px;
+	margin:1px;
+	border: 1px solid #ccc;
+	width: 200px;
+}
+button {
+    background-color: #DD287A;
+    border: 1px solid #CCC;
+    color:#FFF;
+    padding:5px;
+ 	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px ;
+	border-radius: 5px;
+	width: 203px;
+}
+textarea:focus, input:focus, select:focus, button:focus{
+    outline: none;
+    resize: none;
+}
+label {
+	text-transform: lowercase;	
+}
+label:first-letter {
+	text-transform: uppercase;
+}
+.fileUpload > span,
+.fileUpload {
+    color:#000;
+    text-decoration: none;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px ;
+	border-radius: 5px ;
+	padding:0;
+	position: relative;
+    overflow: hidden;
+}
+.fileUpload input.upload {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0;
+    filter: alpha(opacity=0);
+}
+a > button {
+	width:30px !important;
+}
+hr {
+    border: 1px dotted #ccc;
+    clear:both;
+}
+
+.ui-dialog-titlebar-close {
+  visibility: hidden;
+  color: #FFF !important;
+}
+.ui-dialog-buttonset button {
+	width: auto !important;
+}
+.ui-datepicker-trigger {
+	padding-left: 5px;
+}
+button ,form input[type="file"]{
+	cursor: pointer;
+}
+.cancelBtn {
+ 	background-color: #CCC !important;
+ 	color: #333 !important;
+ 	width: auto !important;
+}
+.submitBtn {
+	width: 135px !important;
+}
+
+.sorting_disabled {
+	background-color: #333739;
+	color: #FFF;
+}

@@ -1,0 +1,79 @@
+.col-xs-15{
+    width:20%;
+}
+.col-xs-12 label {
+    display: block;
+    margin: 5px 0 5px 0;
+    font-weight: bold;
+    padding:5px 0 5px 10px;
+}
+.container-fixed {
+	min-width: 1050px;
+	max-width: 1050px;
+}
+#GroupDateSelector input[name="inputDate"] {
+	width: 170px;
+	border: 1px solid #ccc;
+	padding: 5px;
+	margin:2px 2px 2px 0;
+}
+#GroupDateSelector select[name="Groups"]  {
+	width: 200px;
+	border: 1px solid #ccc;
+	padding: 5px;
+	margin:2px 2px 2px 0;
+}
+#GroupDateSelector input[type="Submit"] {
+	width: 200px;
+	border: 1px solid #ccc;
+	padding: 5px;
+	margin:2px 2px 2px 0;
+}
+#GroupDateSelector {
+	width: 210px;
+}
+.multiple_emails-ul {
+	height:192px;
+	width: 205px; 
+	overflow:auto;  
+	margin-top:0px;
+	margin-bottom:20px;
+	background-color: #FFF;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px ;
+	border-radius: 5px ;
+	border: 1px solid #ccc;
+}
+/* zorg voor hor scrollbar bij de lists */
+#emailInput {
+	display:block;
+	width: 200px;
+	white-space: pre;
+	word-wrap: normal;
+	overflow-x: scroll;
+}
+.multiple_emails-container {
+	white-space: nowrap;
+}
+
+/* poging han: voor het toestaan van \n in jQuery tooltip text; maar dit werkt niet .....*/
+.ui-tooltip {
+	white-space: pre-line;
+ }
+ 
+ .buttonUp {
+	background-image: url(/images/arrow_up.png);
+	background-repeat: no-repeat;
+}
+/* als grote populatie dan komt er een dialog in deze div over 'laden kan even duren' */
+#ajaxSpinner {
+	/* border: dotted; */
+	color: #FF7020;
+	position: relative;
+	font-weight: bold;
+	width: 220px;
+	top: 33px;
+	left: 10px;
+	z-index: 1000;
+}
+	

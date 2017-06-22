@@ -1,0 +1,26 @@
+<?php
+
+namespace Excite\Http\Controllers;
+
+use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+
+use DB;
+use Mail;
+use Input;
+use Session;
+
+class testController extends BaseController {
+
+	public function index() {
+		return view('test')->with('selectGroup', 'a name');
+			return view('test')->with('selectGroup', 'a name')->with('result', 'hallo');
+	}
+	
+	public function store() {
+			//dd(Input::all());
+			//return back();
+			return back()->withInput()->with('result', 'jaaaaa');
+	}
+	
+}

@@ -1,0 +1,17 @@
+USE YixowDev;
+SELECT options.id, options.text, yixow_stat.geslacht, waardes.text, waardes.sleutel_id,  COUNT(options.id) FROM yixow_stat
+JOIN options ON options.id = yixow_stat.option_id
+LEFT JOIN waardes ON yixow_stat.geslacht = waardes.id
+WHERE yixow_stat.question_id = 523
+GROUP BY options.id, yixow_stat.geslacht
+
+
+alternatief met alle vragen:
+
+USE YixowDev;
+SELECT options.id, options.text, yixow_stat.id as statsId , waardes.text, COUNT(options.id) AS answerCnt FROM options
+LEFT JOIN yixow_stat ON yixow_stat.option_id = options.id
+LEFT JOIN waardes ON yixow_stat.geslacht = waardes.id 
+WHERE options.question_id = 523
+GROUP BY options.id, yixow_stat.geslacht
+ORDER BY ISNULL (statsId)

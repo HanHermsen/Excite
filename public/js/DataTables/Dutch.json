@@ -1,0 +1,21 @@
+
+
+{
+    "sProcessing": "<span style='color:#FF7020'>Bezig met laden...&nbsp;&nbsp;&nbsp;<img src='images/a_spinner-orange.gif' width='40px' /></span>",
+    "sLengthMenu": "_MENU_ resultaten weergeven",
+    "sZeroRecords": "Geen resultaten gevonden",
+    "sInfo": "_START_ tot _END_ van _TOTAL_ resultaten",
+    "sInfoEmpty": "Geen resultaten om weer te geven",
+    "sInfoFiltered": " (gefilterd uit _MAX_ resultaten)",
+    "sInfoPostFix": "",
+    "sSearch": "Zoeken:",
+    "sEmptyTable": "Geen resultaten aanwezig in de tabel",
+    "sInfoThousands": ".",
+    "sLoadingRecords": "Een moment geduld aub - bezig met laden...",
+    "oPaginate": {
+        "sFirst": "Eerste",
+        "sLast": "Laatste",
+        "sNext": "Volgende",
+        "sPrevious": "Vorige"
+    }
+}

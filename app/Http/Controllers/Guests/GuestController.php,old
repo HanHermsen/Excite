@@ -1,0 +1,107 @@
+<?php
+
+namespace Excite\Http\Controllers\Guests;
+
+use Input;
+use Redirect;
+use Auth;
+use Excite\Http\Controllers\Controller;
+use Mail;
+use Excite\Models\groupDbModel;
+use Excite\Models\GuestDbModel;
+use DB;
+
+use Illuminate\Http\Request;
+
+class GuestController extends Controller
+{
+
+    public function index()
+    {
+        $viewGroups = groupDbModel::viewGroups();
+		$deletedGroups = groupDbModel::viewGroups(true);
+		
+        $viewGuests = GuestDbModel::viewGuests($groupId = null);
+        
+   		return view('guests.index_guests' ,['viewGroups' => $viewGroups,'viewGuests' => $viewGuests, 'deletedGroups' => $deletedGroups]);
+
+    }
+
+    private function getGroupId()
+    {
+        $selectGroupId = Input::get('groups');
+        return $selectGroupId;
+    }
+
+    public function postData(Request $request)
+    {
+		dd($request->all());
+		$selectGroupId = $this->getGroupId(); 
+		$selectGroupName = groupDbModel::getGroupName($selectGroupId)->name;
+		        
+		$timestamp = date('Y-m-d H:i:s');
+		$newInvitations = explode ( ',' , $request->get('hiddenNewInvitationInput'));
+		if ( $newInvitations[0] == '' ) $newInvitations = [];
+		$doDelete = explode(',',$request->get('hiddenDoDeleteInput'));
+		if ( $doDelete[0] == '' ) $doDelete = [];
+
+		$memberDel=[];
+		$invitationDel=[];
+
+		foreach ($doDelete as $d ) {
+			if ( $d[0] == '_') {
+				$memberDel[] = substr($d, 1);
+			} else {
+				$invitationDel[] = $d;
+			}
+		}
+
+		// Delete Guests
+		foreach($memberDel as $mb) {
+			GuestDbModel::deleteMember($selectGroupId,$mb);
+		}
+
+		// Delete invites
+		foreach($invitationDel as $id) { // bestaat dit al in het model??
+			GuestDbModel::deleteInvite($selectGroupId,$id);
+		}
+
+		foreach ( $newInvitations as $n ) {
+
+			if ( GuestDbModel::checkInvited($n,$selectGroupId) ) {
+				// dit is een lopende uitnodiging die wordt heruitgenoegd
+				foreach(GuestDbModel::getInviteId($n,$selectGroupId) as $reInv) {
+					$inviteId = $reInv;
+				}
+
+			} else {
+				DB::transaction(function() use ($n,$selectGroupId,$timestamp){
+				$this->addToInvitations = GuestDbModel::insertInvite($n,$selectGroupId,$timestamp);
+				$this->inviteId = DB::getPdo()->lastInsertId();
+				});
+				DB::commit(); 
+				$inviteId = $this->inviteId;
+			}
+			
+			if(!empty($inviteId)) {
+			    $hashGroupId = \Hashids::encode($inviteId);
+			    Mail::send('emails.invited', ['invitedBy' => Auth::user()->email,'hashGroupId' => $hashGroupId,'selectGroupName' => $selectGroupName], function($message) use ($n) {
+				$message->to($n, null)->subject('Yixow invitation');
+				});
+			}
+		}
+		
+        //return Redirect::to('guests')->withInput()->with('viewID',$selectGroupId);
+        return Redirect::to('guests')->withInput();
+    }
+
+	public function getGroupMembers(Request $r) 
+    {
+		$out['members'] = GuestDbModel::getMembersLcSorted($r->input('groupId'));
+		$out['invitations'] = GuestDbModel::getInvitationsLcSorted($r->input('groupId'));
+		return response()->json( $out );
+		//return response()->json($r->getAll());
+	}
+
+
+}

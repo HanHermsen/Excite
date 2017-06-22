@@ -1,0 +1,38 @@
+
+De BESTE:
+
+use exciteapp_yixow;
+SELECT questions.question, questions.created_at, groups.name, COUNT( DISTINCT members.id) + 1 AS memberCnt, COUNT( DISTINCT answers.id) AS answerCnt, ROUND((COUNT(DISTINCT answers.id)/(COUNT(DISTINCT members.id)+1)) * 100) AS percentage , questions.time_limit, questions.id
+FROM questions JOIN groups ON groups.user_id = 56 AND groups.id = questions.group_id JOIN answers ON answers.question_id = questions.id LEFT JOIN members ON members.group_id = groups.id
+
+GROUP BY questions.id;
+
+
+>>>>> Beheerder is geen lid.....
+use exciteapp_yixow;
+SELECT questions.question, questions.created_at, groups.name, COUNT( DISTINCT members.id) AS memberCnt, COUNT( DISTINCT answers.id) AS answerCnt,  questions.time_limit, questions.id
+FROM questions
+	JOIN groups ON groups.user_id = 56 AND groups.id = questions.group_id
+	LEFT JOIN answers ON answers.question_id = questions.id AND answers.user_id != groups.user_id
+	LEFT JOIN members ON members.group_id = groups.id
+GROUP BY questions.id;
+
+GUEST stuff
+
+USE exciteapp_yixow;
+SELECT users.email, users.created_at, groups.name, COUNT(questions.id) as groupQuestionCnt, COUNT(answers.id) AS groupAnswerCnt, users.created_at FROM members
+JOIN groups ON groups.user_id = 56 AND members.group_id = groups.id
+JOIN users ON users.id = members.user_id
+JOIN questions ON questions.group_id = groups.id
+LEFT JOIN answers ON questions.id = answers.question_id AND answers.user_id = users.id
+GROUP BY members.id
+
+---- GROUPS
+use exciteapp_yixow;
+
+SELECT groups.name, COUNT(DISTINCT members.id), COUNT( DISTINCT questions.id), COUNT( DISTINCT answers.id) FROM groups
+JOIN users ON users.id = groups.user_id AND users.id = 55
+LEFT JOIN members ON members.group_id = groups.id
+LEFT JOIN questions ON questions.group_id = groups.id
+LEFT JOIN answers ON answers.question_id = questions.id AND groups.user_id != answers.user_id
+GROUP BY groups.id

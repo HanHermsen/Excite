@@ -1,0 +1,108 @@
+#qBottom {
+	clear:both;
+}
+.row label {
+    display: block;
+    margin: 5px 0 5px 0;
+    font-weight: bold;
+    padding:5px 0 5px 10px;
+}
+.container-fixed {
+	min-width: 1050px;
+	max-width: 1050px;
+}
+#groupPreview {
+	background-color: #FFF;
+	display: block;
+	width: 250px;
+	height: 159px;
+	padding:0;
+	/* margin-top: -20px; */
+	margin: 0;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+#groupPreview h1 {
+	padding: 10px 0 0 10px;
+	margin:0;
+	color: #FFF;
+	font-size: 14px;
+}
+/* added by Han */
+#uploadPreview {
+	margin: 10px 15px 0 0;
+	width: 320px;
+	height: 200px;
+	float:right;
+}
+.colors {
+	display: block;
+	float:left;
+	width: 38px;
+	height: 38px;
+	margin: 1px;
+	padding:0;
+}
+.colorsBreak {
+	clear:left;
+}
+input[type="radio"] {
+	width: 15px;
+	height: 15px;
+	margin: 0 0 0 5px;
+	padding:0;
+}
+input[type="checkbox"] {
+	display: inline-block;
+	padding:0;
+	margin:0;
+	width:25px;
+}
+.hasDatepicker  {
+	float:left;
+	width: auto !important;
+}
+#eraseDate {
+	color: #333;
+	float: left;
+	width: auto;
+	background-color: #DDD;
+	border: 1px solid #CCC;
+	margin-bottom:105px;
+}
+#uploadPreview { /* cascades on #uploadPreview in groups.css */
+	width: 160px; /* wordt in exciteShared.js gebruikt als image max display width */
+	height: 120px; /* wordt in exciteShared.js gebruikt als image max display height */
+}
+.ExpressHeightFix {
+	height: 30px;
+}
+#deleteGroupB {
+	margin-left: 67px;
+}
+#rangeInfo {
+	margin-top: 315px !important;
+	line-height: 25px;	
+}
+.rangeInfoProp {
+	font-weight: bold;
+	width: 75px;
+	clear:left;
+	float:left;
+}
+.rangeInfoVal {
+	float:left;
+}
+.publicGroup{
+	color: #929292;
+}
+.businessGroup{
+	color: #FF7020;
+}
+.publicGroup:hover, .businessGroup:hover {
+	color: #333;
+}
+tr:hover span   {
+	color: #333 !important;	
+}

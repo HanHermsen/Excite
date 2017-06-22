@@ -1,0 +1,207 @@
+
+/* for any box display a size will define the overall size of a box instead of
+   the original box model size = content size; visible size is content size + padding size + border size*/
+
+
+/*  Tijdelijk    *    in     body      veranderd*/
+/* han: weer teruggezet naar *; anders werkt de stats flexbox niet goed* */
+body {
+    box-sizing: border-box;
+	/* needed as long as this 'new' standard is not broadly supported as such */
+	-webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+/* alle kinderen van een div met deze classname krijgen de flexbox eigenschap */
+.flexContainer {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	/*border-style: solid;
+	border-color: green;
+	border-width: 5px; */
+}
+.col-md-4 > label,.col-md-5 > label,.col-md-3 > label, #dateFromDiv > label ,#dateTillDiv > label {
+    display: block;
+    margin: 5px 0 5px 0;
+    font-weight: bold;
+    padding:5px 0 5px 10px;
+}
+
+.container-fixed {
+	min-width: 1050px;
+	max-width: 1050px;
+}
+.row {
+	position: relative;
+}
+.bottom-align-text {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 400px;
+	background-color: aqua;
+}
+.sorting_disabled {
+	background-color: #333739;
+	color: #FFF;
+}
+.question {
+	width: 400px;
+}
+.answer {
+	float:left;
+    display: inline-block;
+	clear:both;
+	width: 350px !important;
+}
+#dateFromDiv {
+    float:left;
+}
+#dateTillDiv {
+ 	float:left;
+}
+/* Nav button */
+.navButton { 
+    margin-top:10px;
+    background-color: transparent;
+    margin-left:5px;
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    border: 0;
+    cursor: pointer;
+    height: 16px;
+    width:16px;
+    float:left;
+}
+.buttonUp {
+	background-image: url(/images/arrow_up.png);
+}
+.buttonDown {
+	background-image: url(/images/arrow_down.png);
+}
+/* // Nav button */
+
+.ui-dialog-titlebar-close {
+	visibility: visible;
+}
+#statsButton {
+	width: 20px;
+	padding:1px;
+}
+.StatsType {
+	float:left;
+	display: block;
+	width: 240px;
+}
+.StatsType > button {
+	width: 200px;
+	margin:1px;
+	display: block;
+}
+#StatsTypeSubLinks {
+	float:left;
+	display: block;
+	width: 240px;
+}
+#StatsTypeSubLinks > button {
+	width: 200px;
+	margin:1px;
+	display: block;
+}
+a:link , a:active, a:visited {
+	cursor: default !important;
+}
+a:hover {
+	text-decoration: none !important;
+}
+#imageUploadPreview {
+	background-color: #FFF;
+	text-align: center;
+	color:#ccc;
+	height: 150px; /* wordt gebruikt voor max display size in exciteShared.js; kies verhouding w4xh3*/
+	width: 200px;  /* wordt gebruikt voor max display size in exciteShared.js: kies verhouding w4xh3 */
+	overflow: hidden;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px ;
+	border-radius: 5px;
+}
+
+/** toon mijn vragen buiten mijn groepen in DataTable **/
+	/* checkbox */
+	#tableToolbar {
+		position: relative;
+		float: left;
+		text-align: left;
+	}
+	/* zize of checkboxes */
+	.tableCheckB {
+		width: 20px;
+	}
+	.altRefreshButton {
+		width: 65px;
+	}
+	#publicQuestions {
+		position: relative;
+		top: 4px;
+		left: 30px;
+		font-weight: bold;
+	}
+	#shortStats {
+		position: relative;
+		top: 4px;
+		left: 100px;
+		font-weight: bold;
+	}
+	#newStats {
+		position: relative;
+		top: 4px;
+		left: 300px;
+		font-weight: bold;
+	}	
+	#altBarChartContainer {
+		margin-left: -50px;
+		/* margin-top: -20px; */
+	}
+.bottom {
+	position: absolute;
+	right: 0;
+	bottom:0;
+}
+#clearForm {
+	clear:both;
+	margin: 1px 2px 0 1px;
+}
+.bottom > .cancelBtn {
+	float:left;
+}
+.defaultQuestion {
+	color: #FF7020;
+}
+.questionDeleted, .questionExpired {
+	color: #929292;
+}
+.defaultQuestion:hover, .questionExpired:hover, .questionDeleted:hover {
+	color: #333 !important;
+}
+tr:hover a span  {
+	color: #333 !important;	
+}
+#delQuestion {
+	float:left;
+
+}
+#eraseDate {
+	color: #333;
+	float: left;
+	width: auto;
+	background-color: #DDD;
+	border: 1px solid #CCC;
+}
+#datepickerTill{
+	float:left;
+}
+/* for visibility of the piechart legenda tooltip */
+#statsWindow {
+	z-index: 0;
+}

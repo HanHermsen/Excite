@@ -1,0 +1,7 @@
+*.bat text eol=crlf
+
+# Auto-detect text files, ensure they use LF.
+*         text=auto eol=lf
+#* text=auto
+*.css linguist-vendored
+*.less linguist-vendored

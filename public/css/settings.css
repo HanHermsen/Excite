@@ -1,0 +1,17 @@
+.container-fixed {
+	min-width: 900px;
+	max-width: 900px;
+}
+.col-md-4 > label {
+    display: block;
+    margin: 5px 0 5px 0;
+    font-weight: bold;
+    padding:5px 0 5px 10px;
+}
+.cancelBtn {
+
+	margin-top:38px;
+}
+.marginFix {
+	margin-top:68px;	
+}

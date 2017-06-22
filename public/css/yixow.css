@@ -1,0 +1,51 @@
+#headerTitle {
+	position: relative;
+	left: 45px;
+	top: 10px;
+	bottom: 0px;
+	margin-bottom: 0px;
+	padding-bottom: 0px;
+	border-bottom: 0px;
+}
+/* questions */
+
+.qImage {
+	width: 100%;
+}
+.ui-btn-active {
+background-color: pink !important;
+/* color: pink; */
+}
+#questionText {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+#questionAgo {
+	margin-top: 5px;
+	font-size: 9pt;
+	margin-bottom: 10px;
+}
+.defaultText {
+	font-size: 10pt;
+}
+#answerBtn {
+	color: red;
+	font-size: 9pt;
+	text-decoration: none;
+}
+
+/* choice Panel */
+.menuSelect {
+ color: red;
+}
+
+/* question tabs */
+.underline {
+	margin-top: 0px;
+	top: -10px;
+}
+
+
+    #pageOne, #header, #footer {
+        max-width: 400px;
+    }

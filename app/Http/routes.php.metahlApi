@@ -1,0 +1,37 @@
+<?php
+/** metahlApp */
+// for running the App; standalone node.js served
+Route::get('metahlApp',[]);
+
+
+// ajax json server db access thru Api Controller
+// CORS preflight routes; must be outside the group
+Route::options('metahlApi/getToken', [ 'middleware' => 'metahlApiAuth']);
+Route::options('metahlApi/getLatLon', [ 'middleware' => 'metahlApiAuth']);
+Route::options('metahlApi/getGpsList', [ 'middleware' => 'metahlApiAuth']);
+Route::options('metahlApi/updateWebStats', [ 'middleware' => 'metahlApiAuth']);
+Route::options('metahlApi/updateWebStatsScore', [ 'middleware' => 'metahlApiAuth']);
+Route::options('metahlApi/updateClickCnt', [ 'middleware' => 'metahlApiAuth']);
+Route::options('metahlApi/tstGps', [ 'middleware' => 'metahlApiAuth']);
+
+// contrl routes
+Route::group(['middleware' => 'metahlApiAuth'], function() {
+	Route::get('metahlApi/getToken', [ 'uses' => 'MetahlApi\ApiCtrl@getToken']);
+	Route::get('metahlApi/getLatLon', [ 'uses' => 'MetahlApi\ApiCtrl@getLatLon']);
+	Route::get('metahlApi/getGpsList', [ 'uses' => 'MetahlApi\ApiCtrl@getGpsList']);
+	Route::post('metahlApi/updateWebStats', [ 'uses' => 'MetahlApi\ApiCtrl@updateWebStats']);
+	Route::post('metahlApi/updateWebStatsScore', [ 'uses' => 'MetahlApi\ApiCtrl@updateWebStatsScore']);
+	Route::post('metahlApi/updateClickCnt', [ 'uses' => 'MetahlApi\ApiCtrl@updateClickCnt']);
+	Route::get('metahlApi/tstGps', [ 'uses' => 'MetahlApi\ApiCtrl@tstGps']);
+});
+
+/** testApp */
+Route::get('testApp',[]);
+// CORS preflight
+Route::options('metahlApi/getLocNames', [ 'middleware' => 'metahlApiAuth']);
+Route::options('metahlApi/getZipNames', [ 'middleware' => 'metahlApiAuth']);
+// contrl routes
+Route::group(['middleware' => 'metahlApiAuth'], function() {
+	Route::get('metahlApi/getLocNames', [ 'uses' => 'MetahlApi\TestApp@getLocNames']);
+	Route::get('metahlApi/getZipNames', [ 'uses' => 'MetahlApi\TestApp@getZipNames']);
+});

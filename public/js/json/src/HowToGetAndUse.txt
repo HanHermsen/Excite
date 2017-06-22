@@ -1,0 +1,18 @@
+Naam: Bestuurlijke Grenzen
+Bron:
+Home Page https://www.pdok.nl/
+Map Viewer: http://pdokviewer.pdok.nl/ klik Bestuurlijke grenzen.
+Download: https://www.pdok.nl/nl/producten/pdok-downloads/basis-registratie-kadaster
+
+
+Allen de .gml gebruikt voor provincie- en gemeentegrenzen.
+
+Converted .gml to GeoJson with:
+http://converter.mygeodata.eu/
+beetje clumsy bediening; verder ok.
+
+Kies als Target Vector Format: GeoJson
+Kies als Output Coordinate System: WSG84
+
+Downloaded results naar ../*.json
+

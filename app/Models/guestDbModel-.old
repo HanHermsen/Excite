@@ -1,0 +1,160 @@
+<?php
+
+namespace Excite\Models;
+
+use DB;
+use Session;
+
+class GuestDbModel {
+
+	/**
+	 * guestDbModel::checkUser()
+	 * Check if user is in table Users and Members
+	 * @param mixed $userEmail
+	 * @param mixed $groupId
+	 * @return
+	 */
+	public static function checkUser($userEmail,$groupId){
+		
+        $checkMemberUser = DB::table('users')
+            ->select(DB::raw('users.id,users.email,members.group_id,members.id as memberId'))
+            ->leftJoin('members', function($join) use ($groupId)
+                {
+                $join->on('users.id', '=', 'members.user_id')
+                     ->where('members.group_id', '=', $groupId);
+                }
+            )
+            ->where('users.email', $userEmail)
+        	->first();
+        	
+        	return $checkMemberUser;
+		
+	}
+	
+	public static function getInviteId($email,$groupId) {
+		$selectIdInvite = DB::table('invitations')
+            ->select('id')
+            ->where('email', $email)
+            ->where('group_id',$groupId)
+        	->first();
+        	
+        	return $selectIdInvite;		
+	}
+
+	/**
+	 * guestDbModel::checkInvited()
+	 * Check if user is invited already
+	 * @param mixed $userEmail
+	 * @param mixed $groupId
+	 
+	 * @return
+	 */
+	public static function checkInvited($userEmail,$groupId) {
+      	
+		$checkMemberIsInvited = DB::table('invitations')
+            ->select('email')
+            ->where('email', $userEmail)
+            ->where('group_id',$groupId)
+        	->first();
+        	
+        	return $checkMemberIsInvited;
+	}
+	
+	/**
+	 * guestDbModel::insertInvite()
+	 * 
+	 * @param mixed $userEmail
+	 * @param mixed $groupId
+	 * @param mixed $timeStamp
+	 * @return
+	 */
+	public static function insertInvite($userEmail,$groupId,$timeStamp) {
+		
+		$addToInvitations = DB::table('invitations')->insert(
+			array(
+			'group_id' => $groupId,
+			'created_at' => $timeStamp,
+            'updated_at' => $timeStamp,
+            'email' => $userEmail,
+            'accepted' => 0,
+			)
+		);	
+		
+		return $addToInvitations;
+			
+	}
+
+	/**
+	 * guestDbModel::viewGuests()
+	 * 
+	 * @param mixed $groupId
+	 * @return
+	 */
+	public static function viewGuests($groupId) {
+		
+		if($groupId == null )
+		// Oh Les wat doe je hier nu? Dit is het tegendeel van MVC. De caller moet de juiste groupId leveren!!!!!
+		// het Model is een abstractie die over dit soort dingen _niks_ mag weten
+			$groupId = Session::get('viewID');
+
+    	$viewGuests = DB::table('members')
+        ->select('email')
+    	->join('groups','groups.id', '=', 'members.group_id')
+    	->join('users','users.id','=','members.user_id')
+    	->where('groups.id', $groupId)
+    	->get();
+
+        return $viewGuests;
+		
+	}
+	
+	public static function getMembersLcSorted($groupId) {
+		$q 	= 'SELECT LCASE(users.email) AS email FROM members ';
+		$q .= 'JOIN users ON users.id = members.user_id ';
+		$q .= 'WHERE group_id = ? ';
+		$q .= 'ORDER BY users.email ASC ';
+		return  DB::select($q,[$groupId]);
+	}
+	public static function getInvitationsLcSorted($groupId) {
+		$q 	= 'SELECT LCASE(invitations.email) AS email FROM invitations ';
+		$q .= 'WHERE group_id = ? AND accepted = 0 ';
+		$q .= 'ORDER BY invitations.email ASC ';
+		return DB::select($q,[$groupId]);		
+	}
+	
+	/**
+	 * guestDbModel::viewInvites()
+	 * 
+	 * @param mixed $groupId
+	 * @return
+	 */
+	public static function viewInvites($groupId) {
+		
+		$invitations = DB::table('invitations')
+			->select('email')
+			->where('group_id', $groupId)
+			->where('accepted',0)
+			->orderBy('email', 'asc')
+
+			->get();
+
+		return $invitations;
+		
+	}
+	
+	public static function deleteMember($groupId,$email) {
+        $delete = DB::table('members')
+        ->join('users','users.id','=', 'members.user_id')
+        ->where('group_id' , '=' , $groupId)
+        ->where('email', '=' , $email)
+        ->delete();
+	}
+
+	public static function deleteInvite($groupId,$email) {
+        $delete = DB::table('invitations')
+        ->where('group_id' , '=' , $groupId)
+        ->where('email', '=' , $email)
+        ->delete();
+	}
+	
+}
